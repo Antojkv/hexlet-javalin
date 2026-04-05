@@ -4,33 +4,42 @@ import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
 import static io.javalin.rendering.template.TemplateUtil.model;
 
+// Импортируем наши DTO классы
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
 
 public class HelloWorld {
     public static void main(String[] args) {
-        // Создаем приложение
+        // Создаем приложение с поддержкой jte
         var app = Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
             config.fileRenderer(new JavalinJte());
         });
-        // Описываем, что загрузится по адресу /
-        app.get("/users", ctx -> ctx.result("GET /users"));
+
+        // ===== СУЩЕСТВУЮЩИЕ МАРШРУТЫ =====
+
+        app.get("/users", ctx -> {
+            // Теперь используем шаблон вместо простого текста
+            ctx.render("users/index.jte");
+        });
+
         app.post("/users", ctx -> ctx.result("POST /users"));
+
         app.get("/hello", ctx -> {
-            // Получаем параметр name из запроса
             String name = ctx.queryParamAsClass("name", String.class)
                     .getOrDefault("World");
             ctx.result("Hello, " + name + "!");
         });
-        app.get("/users/{id}/post/{postId}", ctx -> {
 
+        app.get("/users/{id}/post/{postId}", ctx -> {
             String userId = ctx.pathParam("id");
             String postId = ctx.pathParam("postId");
-
             ctx.result("User ID: " + userId + ", Post ID: " + postId);
         });
 
+        // ===== МАРШРУТЫ ДЛЯ КУРСОВ =====
+
+        // Главная страница (использует макет через index.jte)
         app.get("/", ctx -> {
             ctx.render("index.jte");
         });
@@ -58,6 +67,7 @@ public class HelloWorld {
             ctx.render("courses/show.jte", model("page", page));
         });
 
-        app.start(7070); // Стартуем веб-сервер
+        app.start(7070);
+        System.out.println("Сервер запущен! Откройте: http://localhost:7070/");
     }
 }
