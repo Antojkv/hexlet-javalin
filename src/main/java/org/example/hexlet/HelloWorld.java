@@ -17,6 +17,13 @@ public class HelloWorld {
                     .getOrDefault("World");
             ctx.result("Hello, " + name + "!");
         });
+        app.get("/users/{id}/post/{postId}", ctx -> {
+
+            String userId = ctx.pathParam("id");
+            String postId = ctx.pathParam("postId");
+
+            ctx.result("User ID: " + userId + ", Post ID: " + postId);
+        });
         app.start(7070); // Стартуем веб-сервер
     }
 }
