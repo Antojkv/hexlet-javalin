@@ -1,3 +1,4 @@
+@import org.example.hexlet.NamedRoutes
 @import org.example.hexlet.dto.courses.BuildCoursePage
 @param BuildCoursePage page
 
@@ -6,9 +7,8 @@
     content = @`
         <h1>Добавить новый курс</h1>
 
-        <!-- ВЫВОД ОШИБОК -->
         @if(page.getErrors() != null)
-            <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 20px;">
+            <div style="color: red;">
                 <ul>
                     @for(var errors : page.getErrors().values())
                         @for(var error : errors)
@@ -19,26 +19,19 @@
             </div>
         @endif
 
-        <!-- ФОРМА -->
-        <form action="/courses" method="post">
-            <div style="margin-bottom: 15px;">
-                <label>
-                    Название курса:
-                    <br/>
-                    <input type="text" name="name" value="${page.getName()}" style="width: 100%; padding: 5px;" />
+        <form action="${NamedRoutes.coursesPath()}" method="post">
+            <div>
+                <label>Название:<br/>
+                    <input type="text" name="name" value="${page.getName()}" />
                 </label>
             </div>
-
-            <div style="margin-bottom: 15px;">
-                <label>
-                    Описание:
-                    <br/>
-                    <textarea name="description" rows="5" style="width: 100%; padding: 5px;">${page.getDescription()}</textarea>
+            <div>
+                <label>Описание:<br/>
+                    <textarea name="description" rows="5">${page.getDescription()}</textarea>
                 </label>
             </div>
-
             <button type="submit">Создать курс</button>
-            <a href="/courses">Отмена</a>
+            <a href="${NamedRoutes.coursesPath()}">Отмена</a>
         </form>
     `
 )

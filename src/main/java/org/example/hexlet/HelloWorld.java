@@ -35,7 +35,7 @@ public class HelloWorld {
             ctx.result("Hello, " + name + "!");
         });
 
-        app.get("/users/{id}/post/{postId}", ctx -> {
+        app.get(NamedRoutes.userPath("{id}") + "/post/{postId}", ctx -> {
             String userId = ctx.pathParam("id");
             String postId = ctx.pathParam("postId");
             ctx.result("User ID: " + userId + ", Post ID: " + postId);
@@ -44,18 +44,18 @@ public class HelloWorld {
         // ===== МАРШРУТЫ ДЛЯ КУРСОВ =====
 
         // Главная страница
-        app.get("/", ctx -> {
+        app.get(NamedRoutes.rootPath(), ctx -> {
             ctx.render("index.jte");
         });
 
-        // 1. КОНКРЕТНЫЙ маршрут - форма создания курса (ДОЛЖЕН БЫТЬ ПЕРВЫМ!)
-        app.get("/courses/build", ctx -> {
+        // 1. КОНКРЕТНЫЙ маршрут - форма создания курса
+        app.get(NamedRoutes.buildCoursePath(), ctx -> {
             var page = new BuildCoursePage();
             ctx.render("courses/build.jte", model("page", page));
         });
 
         // 2. Обработчик создания курса (POST)
-        app.post("/courses", ctx -> {
+        app.post(NamedRoutes.coursesPath(), ctx -> {
             String name = ctx.formParam("name");
             String description = ctx.formParam("description");
 
@@ -80,7 +80,7 @@ public class HelloWorld {
                 // Сохраняем курс
                 Course course = new Course(null, name, description);
                 Data.addCourse(course);
-                ctx.redirect("/courses");
+                ctx.redirect(NamedRoutes.coursesPath());
 
             } catch (io.javalin.validation.ValidationException e) {
                 var page = new BuildCoursePage(name, description, e.getErrors());
@@ -89,7 +89,7 @@ public class HelloWorld {
         });
 
         // 3. Список всех курсов с поиском
-        app.get("/courses", ctx -> {
+        app.get(NamedRoutes.coursesPath(), ctx -> {
             String term = ctx.queryParam("term");
             var allCourses = Data.getCourses();
             ArrayList<Course> filteredCourses = new ArrayList<>();
@@ -112,8 +112,8 @@ public class HelloWorld {
             ctx.render("courses/index.jte", model("page", page));
         });
 
-        // 4. ДИНАМИЧЕСКИЙ маршрут - страница отдельного курса (ДОЛЖЕН БЫТЬ ПОСЛЕДНИМ!)
-        app.get("/courses/{id}", ctx -> {
+        // 4. ДИНАМИЧЕСКИЙ маршрут - страница отдельного курса
+        app.get(NamedRoutes.coursePath("{id}"), ctx -> {
             var id = ctx.pathParamAsClass("id", Long.class).get();
             var course = Data.getCourseById(id);
 
@@ -129,14 +129,14 @@ public class HelloWorld {
 
         // ===== ТЕСТЫ XSS =====
 
-        app.get("/users/escaped/{id}", ctx -> {
+        app.get(NamedRoutes.escapedPath("{id}"), ctx -> {
             var id = ctx.pathParam("id");
             var escapedId = StringEscapeUtils.escapeHtml4(id);
             ctx.contentType("text/html");
             ctx.result("<h1>User ID: " + escapedId + "</h1>");
         });
 
-        app.get("/users/safe/{id}", ctx -> {
+        app.get(NamedRoutes.safePath("{id}"), ctx -> {
             var id = ctx.pathParam("id");
             ctx.render("user/show.jte", model("userId", id));
         });
@@ -144,20 +144,20 @@ public class HelloWorld {
         // ===== МАРШРУТЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ =====
 
         // Страница со списком пользователей
-        app.get("/users", ctx -> {
+        app.get(NamedRoutes.usersPath(), ctx -> {
             var users = UserRepository.all();
             var page = new UsersPage(users);
             ctx.render("users/index.jte", model("page", page));
         });
 
         // Страница с формой создания пользователя
-        app.get("/users/build", ctx -> {
+        app.get(NamedRoutes.buildUserPath(), ctx -> {
             var page = new BuildUserPage();
             ctx.render("users/build.jte", model("page", page));
         });
 
         // Обработчик создания пользователя (с валидацией)
-        app.post("/users", ctx -> {
+        app.post(NamedRoutes.usersPath(), ctx -> {
             String name = ctx.formParam("name");
             String email = ctx.formParam("email");
             String password = ctx.formParam("password");
@@ -198,7 +198,7 @@ public class HelloWorld {
                 // Все проверки пройдены - сохраняем
                 User user = new User(name, email, password);
                 UserRepository.save(user);
-                ctx.redirect("/users");
+                ctx.redirect(NamedRoutes.usersPath());
 
             } catch (io.javalin.validation.ValidationException e) {
                 var page = new BuildUserPage(name, email, e.getErrors());
