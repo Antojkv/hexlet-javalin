@@ -1,14 +1,31 @@
+@import org.example.hexlet.dto.users.BuildUserPage
+@param BuildUserPage page
+
 @template.layout.page(
-    title = "Регистрация пользователя",
+    title = "Регистрация",
     content = @`
         <h1>Регистрация нового пользователя</h1>
 
+        <!-- ВЫВОД ОШИБОК -->
+        @if(page.getErrors() != null)
+            <div style="color: red; border: 1px solid red; padding: 10px; margin-bottom: 20px;">
+                <ul>
+                    @for(var errors : page.getErrors().values())
+                        @for(var error : errors)
+                            <li>${error.getMessage()}</li>
+                        @endfor
+                    @endfor
+                </ul>
+            </div>
+        @endif
+
+        <!-- ФОРМА -->
         <form action="/users" method="post">
             <div style="margin-bottom: 15px;">
                 <label>
                     Имя:
                     <br/>
-                    <input type="text" name="name" required style="width: 100%; padding: 8px; margin-top: 5px;" />
+                    <input type="text" name="name" value="${page.getName()}" style="width: 100%; padding: 5px;" />
                 </label>
             </div>
 
@@ -16,7 +33,7 @@
                 <label>
                     Email:
                     <br/>
-                    <input type="email" name="email" required style="width: 100%; padding: 8px; margin-top: 5px;" />
+                    <input type="email" name="email" value="${page.getEmail()}" style="width: 100%; padding: 5px;" />
                 </label>
             </div>
 
@@ -24,7 +41,7 @@
                 <label>
                     Пароль:
                     <br/>
-                    <input type="password" name="password" required style="width: 100%; padding: 8px; margin-top: 5px;" />
+                    <input type="password" name="password" style="width: 100%; padding: 5px;" />
                 </label>
             </div>
 
@@ -32,14 +49,12 @@
                 <label>
                     Подтверждение пароля:
                     <br/>
-                    <input type="password" name="passwordConfirmation" required style="width: 100%; padding: 8px; margin-top: 5px;" />
+                    <input type="password" name="passwordConfirmation" style="width: 100%; padding: 5px;" />
                 </label>
             </div>
 
-            <button type="submit" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                Зарегистрировать
-            </button>
-            <a href="/users" style="margin-left: 10px;">Отмена</a>
+            <button type="submit">Зарегистрировать</button>
+            <a href="/users">Отмена</a>
         </form>
     `
 )

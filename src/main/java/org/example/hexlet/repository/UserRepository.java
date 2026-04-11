@@ -14,4 +14,14 @@ public class UserRepository {
     public static List<User> all() {
         return users;
     }
+
+    // Проверка: существует ли пользователь с таким email
+    public static boolean existsByEmail(String email) {
+        for (User user : users) {
+            if (user.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

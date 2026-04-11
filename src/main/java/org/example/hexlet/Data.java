@@ -6,6 +6,7 @@ import java.util.List;
 
 public class Data {
     private static List<Course> courses = new ArrayList<>();
+    private static Long nextId = 6L; // следующий ID (после 5)
 
     static {
         // Добавляем тестовые данные
@@ -27,5 +28,11 @@ public class Data {
             }
         }
         return null;
+    }
+
+    public static void addCourse(Course course) {
+        course.setId(nextId);
+        nextId++;
+        courses.add(course);
     }
 }

@@ -5,16 +5,19 @@ import io.javalin.rendering.template.JavalinJte;
 import static io.javalin.rendering.template.TemplateUtil.model;
 import org.apache.commons.text.StringEscapeUtils;
 
-
 // Импортируем наши DTO классы
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
+import org.example.hexlet.dto.courses.BuildCoursePage;
+import org.example.hexlet.dto.users.BuildUserPage;
 import org.example.hexlet.model.Course;
 import org.example.hexlet.model.User;
 import org.example.hexlet.dto.users.UsersPage;
 import org.example.hexlet.repository.UserRepository;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
 
 public class HelloWorld {
     public static void main(String[] args) {
@@ -40,25 +43,58 @@ public class HelloWorld {
 
         // ===== МАРШРУТЫ ДЛЯ КУРСОВ =====
 
-        // Главная страница (использует макет через index.jte)
+        // Главная страница
         app.get("/", ctx -> {
             ctx.render("index.jte");
         });
 
-        // Список всех курсов
+        // 1. КОНКРЕТНЫЙ маршрут - форма создания курса (ДОЛЖЕН БЫТЬ ПЕРВЫМ!)
+        app.get("/courses/build", ctx -> {
+            var page = new BuildCoursePage();
+            ctx.render("courses/build.jte", model("page", page));
+        });
+
+        // 2. Обработчик создания курса (POST)
+        app.post("/courses", ctx -> {
+            String name = ctx.formParam("name");
+            String description = ctx.formParam("description");
+
+            if (name != null) name = name.trim();
+            if (description != null) description = description.trim();
+
+            try {
+                // Валидация названия (длиннее 2 символов)
+                if (name == null || name.length() <= 2) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("name", List.of(new io.javalin.validation.ValidationError<>("Название должно быть длиннее 2 символов")))
+                    );
+                }
+
+                // Валидация описания (длиннее 10 символов)
+                if (description == null || description.length() <= 10) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("description", List.of(new io.javalin.validation.ValidationError<>("Описание должно быть длиннее 10 символов")))
+                    );
+                }
+
+                // Сохраняем курс
+                Course course = new Course(null, name, description);
+                Data.addCourse(course);
+                ctx.redirect("/courses");
+
+            } catch (io.javalin.validation.ValidationException e) {
+                var page = new BuildCoursePage(name, description, e.getErrors());
+                ctx.render("courses/build.jte", model("page", page));
+            }
+        });
+
+        // 3. Список всех курсов с поиском
         app.get("/courses", ctx -> {
-            // Получаем поисковый запрос
             String term = ctx.queryParam("term");
-
-            // Получаем все курсы
             var allCourses = Data.getCourses();
-
-            // Список для результатов
             ArrayList<Course> filteredCourses = new ArrayList<>();
 
-            // Если есть поисковый запрос
             if (term != null && !term.isEmpty()) {
-                // Ищем курсы
                 for (var course : allCourses) {
                     String lowerTerm = term.toLowerCase();
                     if (course.getName().toLowerCase().contains(lowerTerm) ||
@@ -67,7 +103,6 @@ public class HelloWorld {
                     }
                 }
             } else {
-                // Если поиска нет - показываем все
                 filteredCourses = new ArrayList<>(allCourses);
                 term = "";
             }
@@ -77,7 +112,7 @@ public class HelloWorld {
             ctx.render("courses/index.jte", model("page", page));
         });
 
-        // Страница отдельного курса
+        // 4. ДИНАМИЧЕСКИЙ маршрут - страница отдельного курса (ДОЛЖЕН БЫТЬ ПОСЛЕДНИМ!)
         app.get("/courses/{id}", ctx -> {
             var id = ctx.pathParamAsClass("id", Long.class).get();
             var course = Data.getCourseById(id);
@@ -92,6 +127,8 @@ public class HelloWorld {
             ctx.render("courses/show.jte", model("page", page));
         });
 
+        // ===== ТЕСТЫ XSS =====
+
         app.get("/users/escaped/{id}", ctx -> {
             var id = ctx.pathParam("id");
             var escapedId = StringEscapeUtils.escapeHtml4(id);
@@ -99,13 +136,12 @@ public class HelloWorld {
             ctx.result("<h1>User ID: " + escapedId + "</h1>");
         });
 
-        // Автоматическое экранирование через шаблонизатор JTE
         app.get("/users/safe/{id}", ctx -> {
             var id = ctx.pathParam("id");
             ctx.render("user/show.jte", model("userId", id));
         });
 
-        // ===== МАРШРУТЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ (НОВЫЕ) =====
+        // ===== МАРШРУТЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ =====
 
         // Страница со списком пользователей
         app.get("/users", ctx -> {
@@ -116,36 +152,58 @@ public class HelloWorld {
 
         // Страница с формой создания пользователя
         app.get("/users/build", ctx -> {
-            ctx.render("users/build.jte");
+            var page = new BuildUserPage();
+            ctx.render("users/build.jte", model("page", page));
         });
 
-        // Обработчик создания пользователя (POST запрос)
+        // Обработчик создания пользователя (с валидацией)
         app.post("/users", ctx -> {
-            // Получаем данные из формы
             String name = ctx.formParam("name");
             String email = ctx.formParam("email");
             String password = ctx.formParam("password");
             String passwordConfirmation = ctx.formParam("passwordConfirmation");
 
-            // Простая проверка: пароль и подтверждение должны совпадать
-            if (password == null || !password.equals(passwordConfirmation)) {
-                ctx.status(400);
-                ctx.result("Пароли не совпадают!");
-                return;
+            // Нормализация
+            if (name != null) name = name.trim();
+            if (email != null) email = email.trim().toLowerCase();
+
+            try {
+                // 1. Проверка имени
+                if (name == null || name.isEmpty()) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("name", List.of(new io.javalin.validation.ValidationError<>("Имя не может быть пустым")))
+                    );
+                }
+
+                // 2. Проверка email (уникальность)
+                if (UserRepository.existsByEmail(email)) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("email", List.of(new io.javalin.validation.ValidationError<>("Пользователь с таким email уже существует")))
+                    );
+                }
+
+                // 3. Проверка пароля
+                if (password == null || !password.equals(passwordConfirmation)) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("password", List.of(new io.javalin.validation.ValidationError<>("Пароли не совпадают")))
+                    );
+                }
+
+                if (password.length() < 3) {
+                    throw new io.javalin.validation.ValidationException(
+                            Map.of("password", List.of(new io.javalin.validation.ValidationError<>("Пароль должен быть не короче 3 символов")))
+                    );
+                }
+
+                // Все проверки пройдены - сохраняем
+                User user = new User(name, email, password);
+                UserRepository.save(user);
+                ctx.redirect("/users");
+
+            } catch (io.javalin.validation.ValidationException e) {
+                var page = new BuildUserPage(name, email, e.getErrors());
+                ctx.render("users/build.jte", model("page", page));
             }
-
-            // Нормализация email: обрезаем пробелы и приводим к нижнему регистру
-            email = email.trim().toLowerCase();
-
-            // Нормализация имени: обрезаем пробелы
-            name = name.trim();
-
-            // Создаем пользователя
-            User user = new User(name, email, password);
-            UserRepository.save(user);
-
-            // Перенаправляем на страницу со списком пользователей
-            ctx.redirect("/users");
         });
 
         app.start(7070);
