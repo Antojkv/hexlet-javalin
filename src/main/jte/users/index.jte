@@ -18,6 +18,7 @@
                         <th>ID</th>
                         <th>Имя</th>
                         <th>Email</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,6 +27,13 @@
                             <td>${user.getId()}</td>
                             <td>${user.getName()}</td>
                             <td>${user.getEmail()}</td>
+                            <td>
+                                <a href="${NamedRoutes.editUserPath(user.getId())}">Редактировать</a>
+                                <form action="${NamedRoutes.userPath(user.getId())}" method="post" style="display: inline;">
+                                    <input type="hidden" name="_method" value="delete" />
+                                    <button type="submit" onclick="return confirm('Удалить пользователя?')">Удалить</button>
+                                </form>
+                            </td>
                         </tr>
                     @endfor
                 </tbody>

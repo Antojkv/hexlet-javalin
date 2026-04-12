@@ -6,16 +6,33 @@ import java.util.List;
 
 public class UserRepository {
     private static List<User> users = new ArrayList<>();
+    private static Long nextId = 1L;
 
     public static void save(User user) {
-        users.add(user);
+        if (user.getId() == null) {
+            user.setId(nextId);
+            nextId++;
+            users.add(user);
+        }
     }
 
     public static List<User> all() {
-        return users;
+        return new ArrayList<>(users);
     }
 
-    // Проверка: существует ли пользователь с таким email
+    public static User find(Long id) {
+        for (User user : users) {
+            if (user.getId().equals(id)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public static void delete(Long id) {
+        users.removeIf(user -> user.getId().equals(id));
+    }
+
     public static boolean existsByEmail(String email) {
         for (User user : users) {
             if (user.getEmail().equals(email)) {

@@ -22,9 +22,16 @@
         @else
             <p>Найдено курсов: ${page.getCourses().size()}</p>
             @for(var course : page.getCourses())
-                <div>
+                <div style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
                     <h2><a href="${NamedRoutes.coursePath(course.getId())}">${course.getName()}</a></h2>
                     <p>${course.getDescription()}</p>
+                    <p>
+                        <a href="${NamedRoutes.editCoursePath(course.getId())}">Редактировать</a>
+                        <form action="${NamedRoutes.coursePath(course.getId())}" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete" />
+                            <button type="submit" onclick="return confirm('Удалить курс?')">Удалить</button>
+                        </form>
+                    </p>
                 </div>
             @endfor
         @endif

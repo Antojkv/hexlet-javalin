@@ -24,6 +24,15 @@ public class NamedRoutes {
         return "/courses/" + id;
     }
 
+    public static String editCoursePath(String id) {
+        return "/courses/" + id + "/edit";
+    }
+
+    public static String editCoursePath(Long id) {
+        return "/courses/" + id + "/edit";
+    }
+
+
     // ===== МАРШРУТЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ =====
     public static String usersPath() {
         return "/users";
@@ -41,7 +50,16 @@ public class NamedRoutes {
         return "/users/" + id;
     }
 
-    // ===== ТЕСТОВЫЕ МАРШРУТЫ ДЛЯ XSS =====
+    public static String editUserPath(String id) {
+        return "/users/" + id + "/edit";
+    }
+
+    public static String editUserPath(Long id) {
+        return "/users/" + id + "/edit";
+    }
+
+
+    // ===== ТЕСТОВЫЕ МАРШРУТЫ =====
     public static String escapedPath(String id) {
         return "/users/escaped/" + id;
     }
@@ -50,4 +68,3 @@ public class NamedRoutes {
         return "/users/safe/" + id;
     }
 }
-

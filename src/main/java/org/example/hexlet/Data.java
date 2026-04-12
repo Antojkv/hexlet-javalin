@@ -6,10 +6,9 @@ import java.util.List;
 
 public class Data {
     private static List<Course> courses = new ArrayList<>();
-    private static Long nextId = 6L; // следующий ID (после 5)
+    private static Long nextId = 6L;
 
     static {
-        // Добавляем тестовые данные
         courses.add(new Course(1L, "Java для начинающих", "Изучите основы Java программирования с нуля"));
         courses.add(new Course(2L, "Python для анализа данных", "Научитесь обрабатывать данные с помощью Python"));
         courses.add(new Course(3L, "Веб-разработка на JavaScript", "Создавайте современные веб-приложения"));
@@ -34,5 +33,9 @@ public class Data {
         course.setId(nextId);
         nextId++;
         courses.add(course);
+    }
+
+    public static void deleteCourseById(Long id) {
+        courses.removeIf(course -> course.getId().equals(id));
     }
 }
