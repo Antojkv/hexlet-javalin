@@ -2,10 +2,11 @@ package org.example.hexlet;
 
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
-import static io.javalin.rendering.template.TemplateUtil.model;  // ← ДОБАВИТЬ ЭТОТ ИМПОРТ
+import static io.javalin.rendering.template.TemplateUtil.model;
 import org.apache.commons.text.StringEscapeUtils;
 import org.example.hexlet.controller.UsersController;
 import org.example.hexlet.controller.CoursesController;
+import org.example.hexlet.dto.MainPage;
 
 public class HelloWorld {
     public static void main(String[] args) {
@@ -14,6 +15,17 @@ public class HelloWorld {
             config.bundledPlugins.enableDevLogging();
             config.fileRenderer(new JavalinJte());
             config.router.treatMultipleSlashesAsSingleSlash = true;
+        });
+
+        // ===== МИДЛВАРА 1: Логирование времени запроса (ДО) =====
+        app.before(ctx -> {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            System.out.println("[" + now + "] " + ctx.method() + " " + ctx.path());
+        });
+
+        // ===== МИДЛВАРА 2: Логирование статуса ответа (ПОСЛЕ) =====
+        app.after(ctx -> {
+            System.out.println("  → Статус ответа: " + ctx.status());
         });
 
         // ===== ТЕСТОВЫЕ МАРШРУТЫ =====
@@ -52,7 +64,20 @@ public class HelloWorld {
         app.delete(NamedRoutes.userPath("{id}"), UsersController::destroy);
 
         // ===== МАРШРУТЫ ДЛЯ КУРСОВ (CRUD) =====
-        app.get(NamedRoutes.rootPath(), ctx -> ctx.render("index.jte"));
+        app.get(NamedRoutes.rootPath(), ctx -> {
+            // Читаем cookie "visited" (по умолчанию false, если cookie нет)
+            String visitedCookie = ctx.cookie("visited");
+            boolean visited = Boolean.parseBoolean(visitedCookie);
+
+            // Создаем страницу с информацией о посещении
+            var page = new MainPage(visited);
+            ctx.render("index.jte", model("page", page));
+
+            // Устанавливаем cookie "visited" в true (если еще не установлена)
+            if (!visited) {
+                ctx.cookie("visited", "true");
+            }
+        });
         app.get(NamedRoutes.coursesPath(), CoursesController::index);
         app.get(NamedRoutes.buildCoursePath(), CoursesController::build);
         app.get(NamedRoutes.coursePath("{id}"), CoursesController::show);
