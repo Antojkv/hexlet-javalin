@@ -67,4 +67,12 @@ public class NamedRoutes {
     public static String safePath(String id) {
         return "/users/safe/" + id;
     }
+
+    public static String sessionsPath() {
+        return "/sessions";
+    }
+
+    public static String buildSessionPath() {
+        return "/sessions/build";
+    }
 }

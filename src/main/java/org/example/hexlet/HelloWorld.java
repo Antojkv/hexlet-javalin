@@ -6,6 +6,7 @@ import static io.javalin.rendering.template.TemplateUtil.model;
 import org.apache.commons.text.StringEscapeUtils;
 import org.example.hexlet.controller.UsersController;
 import org.example.hexlet.controller.CoursesController;
+import org.example.hexlet.controller.SessionsController;
 import org.example.hexlet.dto.MainPage;
 
 public class HelloWorld {
@@ -17,15 +18,10 @@ public class HelloWorld {
             config.router.treatMultipleSlashesAsSingleSlash = true;
         });
 
-        // ===== МИДЛВАРА 1: Логирование времени запроса (ДО) =====
+        // ===== МИДЛВАРА: Логирование времени запроса =====
         app.before(ctx -> {
             java.time.LocalDateTime now = java.time.LocalDateTime.now();
             System.out.println("[" + now + "] " + ctx.method() + " " + ctx.path());
-        });
-
-        // ===== МИДЛВАРА 2: Логирование статуса ответа (ПОСЛЕ) =====
-        app.after(ctx -> {
-            System.out.println("  → Статус ответа: " + ctx.status());
         });
 
         // ===== ТЕСТОВЫЕ МАРШРУТЫ =====
@@ -63,21 +59,30 @@ public class HelloWorld {
         app.patch(NamedRoutes.userPath("{id}"), UsersController::update);
         app.delete(NamedRoutes.userPath("{id}"), UsersController::destroy);
 
+        // ===== МАРШРУТЫ ДЛЯ СЕССИЙ (АУТЕНТИФИКАЦИЯ) =====
+        app.get(NamedRoutes.buildSessionPath(), SessionsController::build);
+        app.post(NamedRoutes.sessionsPath(), SessionsController::create);
+        app.post(NamedRoutes.sessionsPath() + "/delete", SessionsController::destroy);
+
         // ===== МАРШРУТЫ ДЛЯ КУРСОВ (CRUD) =====
         app.get(NamedRoutes.rootPath(), ctx -> {
-            // Читаем cookie "visited" (по умолчанию false, если cookie нет)
+            // Читаем cookie "visited"
             String visitedCookie = ctx.cookie("visited");
             boolean visited = Boolean.parseBoolean(visitedCookie);
 
-            // Создаем страницу с информацией о посещении
-            var page = new MainPage(visited);
+            // Читаем текущего пользователя из сессии
+            String currentUser = ctx.sessionAttribute("currentUser");
+
+            // Создаем страницу
+            var page = new MainPage(visited, currentUser);
             ctx.render("index.jte", model("page", page));
 
-            // Устанавливаем cookie "visited" в true (если еще не установлена)
+            // Устанавливаем cookie, если еще не было
             if (!visited) {
                 ctx.cookie("visited", "true");
             }
         });
+
         app.get(NamedRoutes.coursesPath(), CoursesController::index);
         app.get(NamedRoutes.buildCoursePath(), CoursesController::build);
         app.get(NamedRoutes.coursePath("{id}"), CoursesController::show);
