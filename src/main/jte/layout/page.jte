@@ -1,7 +1,6 @@
 @import gg.jte.Content
-@import org.example.hexlet.dto.BasePage
 @param Content content
-@param BasePage page = null
+@param Object page = null
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -10,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hexlet Learning</title>
     <style>
-        /* Стили для флеш-сообщений */
         .flash-success {
             background-color: #d4edda;
             color: #155724;
@@ -29,76 +27,17 @@
             margin-bottom: 20px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .header h1 a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .nav-menu a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .nav-menu a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        .main-content {
-            flex: 1;
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-            width: 100%;
-        }
-
-        .footer {
-            background-color: #333;
-            color: #999;
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-        }
-
-        .footer a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 0; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .header h1 a { color: white; text-decoration: none; }
+        .nav-menu { display: flex; gap: 20px; margin-top: 10px; }
+        .nav-menu a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; }
+        .nav-menu a:hover { background-color: rgba(255,255,255,0.2); }
+        .main-content { flex: 1; max-width: 1200px; margin: 40px auto; padding: 0 20px; width: 100%; }
+        .footer { background-color: #333; color: #999; text-align: center; padding: 20px; margin-top: 40px; }
+        .footer a { color: #4CAF50; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -114,11 +53,14 @@
     </div>
 
     <div class="main-content">
-        <!-- ФЛЕШ-СООБЩЕНИЯ -->
-        @if(page != null && page.getFlash() != null)
-            <div class="flash-${page.getFlashType()}">
-                ${page.getFlash()}
-            </div>
+        @if(page != null)
+            @if(org.example.hexlet.dto.BasePage.class.isInstance(page))
+                @if(((org.example.hexlet.dto.BasePage) page).getFlash() != null)
+                    <div class="flash-${((org.example.hexlet.dto.BasePage) page).getFlashType()}">
+                        ${((org.example.hexlet.dto.BasePage) page).getFlash()}
+                    </div>
+                @endif
+            @endif
         @endif
 
         ${content}
@@ -127,11 +69,7 @@
     <div class="footer">
         <div class="footer-content">
             <p>© 2024 Hexlet Learning. Все права защищены.</p>
-            <p>
-                <a href="https://github.com/your-username" target="_blank">
-                    📦 Мой GitHub профиль
-                </a>
-            </p>
+            <p><a href="https://github.com/your-username" target="_blank">📦 Мой GitHub профиль</a></p>
         </div>
     </div>
 </body>

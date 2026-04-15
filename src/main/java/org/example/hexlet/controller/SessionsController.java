@@ -3,6 +3,7 @@ package org.example.hexlet.controller;
 import io.javalin.http.Context;
 import org.example.hexlet.NamedRoutes;
 
+
 public class SessionsController {
 
     public static void build(Context ctx) {
@@ -11,7 +12,6 @@ public class SessionsController {
 
     public static void create(Context ctx) {
         String nickname = ctx.formParam("nickname");
-        String password = ctx.formParam("password");
 
         if (nickname != null && !nickname.isEmpty()) {
             ctx.sessionAttribute("currentUser", nickname);
@@ -20,7 +20,6 @@ public class SessionsController {
         ctx.redirect(NamedRoutes.rootPath());
     }
 
-    // Выход - теперь POST
     public static void destroy(Context ctx) {
         ctx.sessionAttribute("currentUser", null);
         ctx.redirect(NamedRoutes.rootPath());
