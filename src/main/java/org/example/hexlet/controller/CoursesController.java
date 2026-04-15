@@ -17,7 +17,6 @@ import java.util.List;
 
 public class CoursesController {
 
-    // GET /courses - список всех курсов
     public static void index(Context ctx) {
         String term = ctx.queryParam("term");
         var allCourses = Data.getCourses();
@@ -38,16 +37,23 @@ public class CoursesController {
 
         var header = "Все курсы по программированию";
         var page = new CoursesPage(filteredCourses, header, term);
+
+        // Читаем флеш-сообщение из сессии
+        String flash = ctx.consumeSessionAttribute("flash");
+        String flashType = ctx.consumeSessionAttribute("flashType");
+        if (flash != null) {
+            page.setFlash(flash);
+            page.setFlashType(flashType != null ? flashType : "success");
+        }
+
         ctx.render("courses/index.jte", model("page", page));
     }
 
-    // GET /courses/build - форма создания курса
     public static void build(Context ctx) {
         var page = new BuildCoursePage();
         ctx.render("courses/build.jte", model("page", page));
     }
 
-    // POST /courses - создание курса
     public static void create(Context ctx) {
         String name = ctx.formParam("name");
         String description = ctx.formParam("description");
@@ -56,14 +62,12 @@ public class CoursesController {
         if (description != null) description = description.trim();
 
         try {
-            // Валидация названия
             if (name == null || name.length() <= 2) {
                 throw new io.javalin.validation.ValidationException(
                         Map.of("name", List.of(new io.javalin.validation.ValidationError<>("Название должно быть длиннее 2 символов")))
                 );
             }
 
-            // Валидация описания
             if (description == null || description.length() <= 10) {
                 throw new io.javalin.validation.ValidationException(
                         Map.of("description", List.of(new io.javalin.validation.ValidationError<>("Описание должно быть длиннее 10 символов")))
@@ -72,6 +76,10 @@ public class CoursesController {
 
             Course course = new Course(null, name, description);
             Data.addCourse(course);
+
+            // Устанавливаем флеш-сообщение об успехе
+            ctx.sessionAttribute("flash", "Курс \"" + name + "\" успешно создан!");
+            ctx.sessionAttribute("flashType", "success");
             ctx.redirect(NamedRoutes.coursesPath());
 
         } catch (io.javalin.validation.ValidationException e) {
@@ -80,7 +88,6 @@ public class CoursesController {
         }
     }
 
-    // GET /courses/{id} - страница конкретного курса
     public static void show(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var course = Data.getCourseById(id);
@@ -93,7 +100,6 @@ public class CoursesController {
         ctx.render("courses/show.jte", model("page", page));
     }
 
-    // GET /courses/{id}/edit - форма редактирования курса
     public static void edit(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var course = Data.getCourseById(id);
@@ -105,7 +111,6 @@ public class CoursesController {
         ctx.render("courses/edit.jte", model("course", course));
     }
 
-    // PATCH /courses/{id} - обновление курса
     public static void update(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var course = Data.getCourseById(id);
@@ -123,7 +128,6 @@ public class CoursesController {
         ctx.redirect(NamedRoutes.coursesPath());
     }
 
-    // DELETE /courses/{id} - удаление курса
     public static void destroy(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         Data.deleteCourseById(id);

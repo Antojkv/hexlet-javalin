@@ -1,15 +1,34 @@
 @import gg.jte.Content
+@import org.example.hexlet.dto.BasePage
 @param Content content
-@param String title = "Hexlet Javalin Example"
+@param BasePage page = null
 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} - Hexlet Learning</title>
+    <title>Hexlet Learning</title>
     <style>
-        /* Глобальные стили для всего сайта */
+        /* Стили для флеш-сообщений */
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -37,18 +56,9 @@
             padding: 0 20px;
         }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
         .header h1 a {
             color: white;
             text-decoration: none;
-        }
-
-        .header h1 a:hover {
-            text-decoration: underline;
         }
 
         .nav-menu {
@@ -89,15 +99,6 @@
             color: #4CAF50;
             text-decoration: none;
         }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
     </style>
 </head>
 <body>
@@ -113,6 +114,13 @@
     </div>
 
     <div class="main-content">
+        <!-- ФЛЕШ-СООБЩЕНИЯ -->
+        @if(page != null && page.getFlash() != null)
+            <div class="flash-${page.getFlashType()}">
+                ${page.getFlash()}
+            </div>
+        @endif
+
         ${content}
     </div>
 
@@ -124,8 +132,6 @@
                     📦 Мой GitHub профиль
                 </a>
             </p>
-            <p style="font-size: 12px; margin-top: 10px;">
-               </p>
         </div>
     </div>
 </body>

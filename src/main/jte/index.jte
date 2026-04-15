@@ -3,7 +3,7 @@
 @param MainPage page
 
 @template.layout.page(
-    title = "Главная",
+    page = page,
     content = @`
         <h1>🎓 Добро пожаловать на платформу Хекслет!</h1>
 
@@ -24,11 +24,9 @@
             @endif
 
             <div style="margin: 20px 0;">
-                <p>
-                    <a href="${NamedRoutes.buildSessionPath()}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                        Войти на сайт
-                    </a>
-                </p>
+                <a href="${NamedRoutes.buildSessionPath()}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    Войти на сайт
+                </a>
             </div>
         @endif
 

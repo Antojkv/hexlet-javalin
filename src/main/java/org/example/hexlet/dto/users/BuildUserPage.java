@@ -1,22 +1,21 @@
 package org.example.hexlet.dto.users;
 
+import org.example.hexlet.dto.BasePage;
 import java.util.Map;
 import java.util.List;
 import io.javalin.validation.ValidationError;
 
-public class BuildUserPage {
+public class BuildUserPage extends BasePage {
     private String name;
     private String email;
     private Map<String, List<ValidationError<Object>>> errors;
 
-    // Конструктор для пустой формы
     public BuildUserPage() {
         this.name = "";
         this.email = "";
         this.errors = null;
     }
 
-    // Конструктор с данными и ошибками
     public BuildUserPage(String name, String email, Map<String, List<ValidationError<Object>>> errors) {
         this.name = name;
         this.email = email;

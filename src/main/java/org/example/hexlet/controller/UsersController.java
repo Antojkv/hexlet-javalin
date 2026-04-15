@@ -4,7 +4,6 @@ import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 import static io.javalin.rendering.template.TemplateUtil.model;
 
-
 import org.example.hexlet.NamedRoutes;
 import org.example.hexlet.dto.users.BuildUserPage;
 import org.example.hexlet.dto.users.UserPage;
@@ -17,46 +16,48 @@ import java.util.List;
 
 public class UsersController {
 
-    // GET /users - список всех пользователей
     public static void index(Context ctx) {
         var users = UserRepository.all();
         var page = new UsersPage(users);
+
+        // Читаем флеш-сообщение из сессии
+        String flash = ctx.consumeSessionAttribute("flash");
+        String flashType = ctx.consumeSessionAttribute("flashType");
+        if (flash != null) {
+            page.setFlash(flash);
+            page.setFlashType(flashType != null ? flashType : "success");
+        }
+
         ctx.render("users/index.jte", model("page", page));
     }
 
-    // GET /users/build - форма создания пользователя
     public static void build(Context ctx) {
         var page = new BuildUserPage();
         ctx.render("users/build.jte", model("page", page));
     }
 
-    // POST /users - создание пользователя
     public static void create(Context ctx) {
         String name = ctx.formParam("name");
         String email = ctx.formParam("email");
         String password = ctx.formParam("password");
         String passwordConfirmation = ctx.formParam("passwordConfirmation");
 
-        // Нормализация
         if (name != null) name = name.trim();
         if (email != null) email = email.trim().toLowerCase();
 
         try {
-            // 1. Проверка имени
             if (name == null || name.isEmpty()) {
                 throw new io.javalin.validation.ValidationException(
                         Map.of("name", List.of(new io.javalin.validation.ValidationError<>("Имя не может быть пустым")))
                 );
             }
 
-            // 2. Проверка email (уникальность)
             if (UserRepository.existsByEmail(email)) {
                 throw new io.javalin.validation.ValidationException(
                         Map.of("email", List.of(new io.javalin.validation.ValidationError<>("Пользователь с таким email уже существует")))
                 );
             }
 
-            // 3. Проверка пароля
             if (password == null || !password.equals(passwordConfirmation)) {
                 throw new io.javalin.validation.ValidationException(
                         Map.of("password", List.of(new io.javalin.validation.ValidationError<>("Пароли не совпадают")))
@@ -69,9 +70,12 @@ public class UsersController {
                 );
             }
 
-            // Все проверки пройдены - сохраняем
             User user = new User(name, email, password);
             UserRepository.save(user);
+
+            // Устанавливаем флеш-сообщение об успехе
+            ctx.sessionAttribute("flash", "Пользователь \"" + name + "\" успешно зарегистрирован!");
+            ctx.sessionAttribute("flashType", "success");
             ctx.redirect(NamedRoutes.usersPath());
 
         } catch (io.javalin.validation.ValidationException e) {
@@ -80,7 +84,6 @@ public class UsersController {
         }
     }
 
-    // GET /users/{id} - страница конкретного пользователя
     public static void show(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var user = UserRepository.find(id);
@@ -93,7 +96,6 @@ public class UsersController {
         ctx.render("users/show.jte", model("page", page));
     }
 
-    // GET /users/{id}/edit - форма редактирования пользователя
     public static void edit(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var user = UserRepository.find(id);
@@ -105,7 +107,6 @@ public class UsersController {
         ctx.render("users/edit.jte", model("user", user));
     }
 
-    // PATCH /users/{id} - обновление пользователя
     public static void update(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var user = UserRepository.find(id);
@@ -122,13 +123,22 @@ public class UsersController {
         if (email != null) user.setEmail(email.trim().toLowerCase());
         if (password != null && !password.isEmpty()) user.setPassword(password);
 
+        // Устанавливаем флеш-сообщение об успешном обновлении
+        ctx.sessionAttribute("flash", "Пользователь \"" + user.getName() + "\" успешно обновлен!");
+        ctx.sessionAttribute("flashType", "success");
         ctx.redirect(NamedRoutes.usersPath());
     }
 
-    // DELETE /users/{id} - удаление пользователя
     public static void destroy(Context ctx) {
         var id = ctx.pathParamAsClass("id", Long.class).get();
+        var user = UserRepository.find(id);
+        String userName = user != null ? user.getName() : "";
+
         UserRepository.delete(id);
+
+        // Устанавливаем флеш-сообщение об успешном удалении
+        ctx.sessionAttribute("flash", "Пользователь \"" + userName + "\" успешно удален!");
+        ctx.sessionAttribute("flashType", "success");
         ctx.redirect(NamedRoutes.usersPath());
     }
 }

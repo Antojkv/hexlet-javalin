@@ -1,7 +1,8 @@
 @import org.example.hexlet.NamedRoutes
+@param BuildUserPage page = null
 
 @template.layout.page(
-    title = "Вход",
+    page = page,
     content = @`
         <h1>Вход на сайт</h1>
 
@@ -18,13 +19,11 @@
                 <label>
                     Пароль:
                     <br/>
-                    <input type="password" name="password" required style="width: 100%; padding: 8px; margin-top: 5px;" />
+                    <input type="password" name="password" style="width: 100%; padding: 8px; margin-top: 5px;" />
                 </label>
             </div>
 
-            <button type="submit" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
-                Войти
-            </button>
+            <button type="submit" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Войти</button>
             <a href="/" style="margin-left: 10px;">Отмена</a>
         </form>
     `

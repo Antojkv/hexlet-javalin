@@ -3,7 +3,7 @@
 @param CoursesPage page
 
 @template.layout.page(
-    title = "Курсы",
+    page = page,
     content = @`
         <h1>${page.getHeader()}</h1>
 

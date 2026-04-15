@@ -1,21 +1,14 @@
 package org.example.hexlet.dto.courses;
 
-import java.util.List;
+import org.example.hexlet.dto.BasePage;
 import org.example.hexlet.model.Course;
+import java.util.List;
 
-public class CoursesPage {
+public class CoursesPage extends BasePage {
     private List<Course> courses;
     private String header;
     private String term;
 
-    // Конструктор для списка курсов (без поиска)
-    public CoursesPage(List<Course> courses, String header) {
-        this.courses = courses;
-        this.header = header;
-        this.term = "";
-    }
-
-    // Конструктор для списка курсов (с поиском)
     public CoursesPage(List<Course> courses, String header, String term) {
         this.courses = courses;
         this.header = header;
